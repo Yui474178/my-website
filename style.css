@@ -1,0 +1,51 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #ece9e6, #ffffff);
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+#bingo-board {
+  display: grid;
+  grid-template-columns: repeat(5, 80px);
+  gap: 12px;
+  justify-content: center;
+  margin: 0 auto 30px auto;
+}
+
+#bingo-board div {
+  width: 80px;
+  height: 80px;
+  font-size: 24px;
+  line-height: 80px;
+  background-color: #ffffff;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+#bingo-board div:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+#bingo-board .marked {
+  background-color: gold;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 0 10px gold;
+}
+
+#draw-button {
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #0078D4;
+  color

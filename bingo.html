@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>スマホ対応ビンゴゲーム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: #f8f8f8;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      margin: 16px 0;
+      font-size: 1.8rem;
+    }
+
+    #game-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 10px;
+    }
+
+    .player {
+      border: 2px solid #aaa;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .player h2 {
+      margin: 8px 0;
+      font-size: 1.2rem;
+    }
+
+    .bingo-board {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .bingo-cell {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #eee;
+      border-radius: 6px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .marked {
+      background: gold;
+      color: white;
+    }
+
+    .free {
+      background: #777;
+      color: white;
+      pointer-events: none;
+    }
+
+    button {
+      margin: 10px 8px;
+      font-size: 1.1rem;
+      padding: 12px 24px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #drawn-number {
+      margin-top: 10px;
+      font-size: 1.4rem;
+      color: #333;
+    }
+
+    #winner {
+      font-size: 1.6rem;
+      color: red;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 スマホ対応ビンゴゲーム</h1>
+  <button id="draw-button">数字を引く</button>
+  <button id="reset-button">リセット</button>
+  <div id="drawn-number">数字: -</div>
+  <div id="winner"></div>
+  <div id="game-area"></div>
+
+  <script>
+    const playerNames = ["プレイヤー1", "プレイヤー2"];
+    const gameArea = document.getElementById("game-area");
+    const drawButton = document.getElementById("draw-button");
+    const resetButton = document.getElementById("reset-button");
+    const drawnNumber = document.getElementById("drawn-number");
+    const winnerDisplay = document.getElementById("winner");
+
+    let drawPool;
+    const players = [];
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createPlayerBoard(name) {
+      const numbers = shuffle([...Array(75).keys()].map(n => n + 1)).slice(0, 24);
+      const container = document.createElement("div");
+      container.className = "player";
+
+      const title = document.createElement("h2");
+      title.textContent = name;
+      container.appendChild(title);
+
+      const board = document.createElement("div");
+      board.className = "bingo-board";
+      container.appendChild(board);
+
+      const cells = [];
+      let index = 0;
+
+      for (let i = 0; i < 25; i++) {
+        const cell = document.createElement("div");
+        cell.className = "bingo-cell";
+
+        if (i === 12) {
+          cell.textContent = "FREE";
+          cell.classList.add("marked", "free");
+        } else {
+          const num = numbers[index++];
+          cell.textContent = num;
+          cell.dataset.number = num;
+        }
+
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+
+      gameArea.appendChild(container);
+      players.push({ name, cells });
+    }
+
+    function checkBingo(player) {
+      const isMarked = i => player.cells[i].classList.contains("marked");
+
+      const lines = [
+        [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14],
+        [15,16,17,18,19], [20,21,22,23,24],
+        [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22],
+        [3,8,13,18,23], [4,9,14,19,24],
+        [0,6,12,18,24], [4,8,12,16,20]
+      ];
+
+      return lines.some(line => line.every(isMarked));
+    }
+
+    drawButton.addEventListener("click", () => {
+      if (drawPool.length === 0) {
+        drawnNumber.textContent = "もう引けません！";
+        return;
+      }
+
+      const n = drawPool.splice(Math.floor(Math.random() * drawPool.length), 1)[0];
+      drawnNumber.textContent = `数字: ${n}`;
+
+      players.forEach(player => {
+        player.cells.forEach(cell => {
+          if (cell.dataset.number == n) {
+            cell.classList.add("marked");
+          }
+        });
+
+        if (!winnerDisplay.textContent && checkBingo(player)) {
+          winnerDisplay.textContent = `🎉 ${player.name} がビンゴ！`;
+        }
+      });
+    });
+
+    resetButton.addEventListener("click", () => {
+      drawPool = shuffle([...Array(75).keys()].map(n => n + 1));
+      winnerDisplay.textContent = "";
+      drawnNumber.textContent = "数字: -";
+      gameArea.innerHTML = "";
+      players.length = 0;
+      playerNames.forEach(name => createPlayerBoard(name));
+    });
+
+    // 初回起動時の準備
+    resetButton.click();
+  </script>
+</body>
+</html>
